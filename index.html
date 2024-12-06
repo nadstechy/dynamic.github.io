@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Circles</title>
+  <title>Interactive Circles with Timer and Progress</title>
   <style>
     body {
       margin: 0;
@@ -37,6 +37,49 @@
     }
     .form-container button:hover {
       background-color: yellow;
+    }
+    .timer {
+    font-size: 64px; /* Larger size for visibility */
+    font-weight: bold;
+    color: hwb(0 100% 0%); /* Neon pink color */
+    background-color: transparent;
+    text-align: center;
+    margin: 20px 0;
+    /*animation: neon-glow 1.5s infinite alternate; */
+    }
+
+    @keyframes neon-glow {
+    from {
+        text-shadow: 0 0 5px #fffd80, 0 0 10px #fffd80, 0 0 20px #fffd80, 0 0 30px #fffd80;
+    }
+    to {
+        text-shadow: 0 0 10px #fffd80, 0 0 20px #fffd80, 0 0 40px #fffd80, 0 0 50px #fffd80;
+    }
+    }
+
+    .progress-bar {
+      width: 80%;
+      background-color: gray;
+      height: 20px;
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: yellow;
+      transition: width 0.3s ease-in-out;
+    }
+    .progress-text {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      color: black;
+      font-weight: bold;
+      font-size: 14px;
     }
     .circle-container {
       display: flex;
@@ -82,11 +125,18 @@
   </style>
 </head>
 <body>
-  <h1>Interactive Circles</h1>
+  <h1>Interactive Circles with Timer</h1>
 
   <div class="form-container">
     <input type="number" id="tileCount" placeholder="Enter number of tiles" min="1" />
-    <button onclick="generateCircles()">Generate</button>
+    <button onclick="startGame()">Start</button>
+  </div>
+
+  <div class="timer" id="timer">00:00:00</div>
+
+  <div class="progress-bar">
+    <div class="progress-bar-fill" id="progressBar"></div>
+    <div class="progress-text" id="progressText">0%</div>
   </div>
 
   <div class="circle-container" id="circleContainer"></div>
@@ -96,8 +146,10 @@
   <script>
     let totalCircles = 0;
     let markedCircles = 0;
+    let timerInterval;
+    let startTime;
 
-    function generateCircles() {
+    function startGame() {
       const tileCount = parseInt(document.getElementById("tileCount").value, 10);
       const circleContainer = document.getElementById("circleContainer");
       const congratsMessage = document.getElementById("congratsMessage");
@@ -126,9 +178,11 @@
           if (!this.classList.contains("clicked")) {
             this.classList.add("clicked");
             markedCircles++;
+            updateProgressBar();
 
             // Check if all circles are marked
             if (markedCircles === totalCircles) {
+              clearInterval(timerInterval);
               showCongratsMessage();
             }
           }
@@ -136,18 +190,53 @@
 
         circleContainer.appendChild(circle);
       }
+
+      // Reset and start the timer
+      resetTimer();
+      startTimer();
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      document.getElementById("timer").textContent = "00:00:00";
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      const elapsedTime = Date.now() - startTime;
+      const hours = String(Math.floor(elapsedTime / 3600000)).padStart(2, "0");
+      const minutes = String(Math.floor((elapsedTime % 3600000) / 60000)).padStart(2, "0");
+      const seconds = String(Math.floor((elapsedTime % 60000) / 1000)).padStart(2, "0");
+      document.getElementById("timer").textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    function updateProgressBar() {
+      const progressBar = document.getElementById("progressBar");
+      const progressText = document.getElementById("progressText");
+      const progress = (markedCircles / totalCircles) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${Math.round(progress)}%`;
     }
 
     function showCongratsMessage() {
       const circles = document.querySelectorAll(".circle");
+      const progressBar = document.querySelector(".progress-bar");
+      const timer = document.getElementById("timer");
       const congratsMessage = document.getElementById("congratsMessage");
 
-      // Add the falling animation to all circles
+      // Add the falling animation to all elements
       circles.forEach((circle, index) => {
         setTimeout(() => {
           circle.classList.add("falling");
         }, index * 100); // Stagger the animation for a cascading effect
       });
+
+      progressBar.classList.add("falling");
+      timer.classList.add("falling");
 
       // Show the congrats message after the animation
       setTimeout(() => {
