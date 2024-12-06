@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Circles</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+    }
+    h1 {
+      margin: 20px 0;
+    }
+    .form-container {
+      margin: 20px 0;
+    }
+    .form-container input {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+    }
+    .form-container button {
+      padding: 10px 15px;
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .form-container button:hover {
+      background-color: yellow;
+    }
+    .circle-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: white;
+      color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.5s ease-in-out;
+    }
+    .circle.clicked {
+      background-color: yellow;
+    }
+    .falling {
+      animation: fall 2s ease-in-out forwards;
+    }
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    .message {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Interactive Circles</h1>
+
+  <div class="form-container">
+    <input type="number" id="tileCount" placeholder="Enter number of tiles" min="1" />
+    <button onclick="generateCircles()">Generate</button>
+  </div>
+
+  <div class="circle-container" id="circleContainer"></div>
+
+  <div class="message" id="congratsMessage">🎉 Congrats! Done for the day 🎉</div>
+
+  <script>
+    let totalCircles = 0;
+    let markedCircles = 0;
+
+    function generateCircles() {
+      const tileCount = parseInt(document.getElementById("tileCount").value, 10);
+      const circleContainer = document.getElementById("circleContainer");
+      const congratsMessage = document.getElementById("congratsMessage");
+
+      // Clear existing circles and reset counters
+      circleContainer.innerHTML = "";
+      congratsMessage.style.display = "none";
+      markedCircles = 0;
+
+      // Validate tile count
+      if (isNaN(tileCount) || tileCount <= 0) {
+        alert("Please enter a valid number of tiles.");
+        return;
+      }
+
+      totalCircles = tileCount;
+
+      // Create the circles
+      for (let i = 1; i <= tileCount; i++) {
+        const circle = document.createElement("div");
+        circle.className = "circle";
+        circle.textContent = i;
+
+        // Add click event listener
+        circle.addEventListener("click", function () {
+          if (!this.classList.contains("clicked")) {
+            this.classList.add("clicked");
+            markedCircles++;
+
+            // Check if all circles are marked
+            if (markedCircles === totalCircles) {
+              showCongratsMessage();
+            }
+          }
+        });
+
+        circleContainer.appendChild(circle);
+      }
+    }
+
+    function showCongratsMessage() {
+      const circles = document.querySelectorAll(".circle");
+      const congratsMessage = document.getElementById("congratsMessage");
+
+      // Add the falling animation to all circles
+      circles.forEach((circle, index) => {
+        setTimeout(() => {
+          circle.classList.add("falling");
+        }, index * 100); // Stagger the animation for a cascading effect
+      });
+
+      // Show the congrats message after the animation
+      setTimeout(() => {
+        congratsMessage.style.display = "block";
+      }, circles.length * 100 + 2000);
+    }
+  </script>
+</body>
+</html>
